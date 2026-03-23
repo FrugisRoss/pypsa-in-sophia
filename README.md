@@ -122,6 +122,15 @@ In the file `pypsa-eur-sec/config.yaml` (if that file doesn't exist go to `pypsa
 > solving: 
 >   tmpdir: '/tmp'
 
+Edit 20/03/2026 by Rossella: This option is not present in the latest pypsa eur configurations (I have v2025.07.0). Probably it has been replaced by the following option.
+
+> solving: 
+>>options:
+>>>solver_dir:
+
+(Ask)
+
+
 ## D. Running simulations
 
 Congratulations, if you have made it this far you are now ready to run some simulations. 
@@ -268,5 +277,122 @@ Don't use the login node for any operations (in particular with VS Code, as it s
   a. through VS Code: Press F1 to open the command pallete, run Remote - SSH: Kill VS Code Server on Host...
   b. through the terminal: ```pkill -u "$USER" vscode-server``` or ```killall -u "$USER" vscode-server```.
 3. Git might not be activated by default: ```module load git``` and check with ```git --version```.
+
+
+Edit 20/03/2026 by Rossella:
+
+## F. Experience based knowledge from Lukas and Rossella
+
+### Tunneling to SOPHIA
+
+SSH-ing into SOPHIA from VS code can be very unstable, and it might disconnect quite often (e.g. anytime your computer goes into standby). The login, sometimes, may take many attempts before succeding, for some reasons.
+It could be a good idea to establish a VS code tunnel (https://code.visualstudio.com/docs/remote/tunnels) to SOPHIA.
+
+The DTU Wind Department shows how to do this in this very nice video:
+
+https://statics.teams.cdn.office.net/evergreen-assets/safelinks/2/atp-safelinks.html
+
+We personally login with GitHub to access the tunnel.
+
+Once you do this procedure the tunnel should be set.
+Then, you can easily ssh to sophia from the terminal of your computer and then you can tunnel to that node typing in the terminal:
+```
+./code tunnel
+```
+Then you can open VS code, go to 'Open a Remote Window' (bottom left of the VS code interface) do 'Connect to Tunnel', you select either Github or Miscrosoft (depending on what you used to create the tunnel) and then you select the tunnel you want to access.
+
+For our experience this creates a more stable connection to SOPHIA.
+
+You can tunnel to both the login node or a specific partition node. To do the latter, before tunneling, you can request and access a node and then tunnel.
+
+##### Note:
+The only issue that may arise is that the unix executable file for the CLI (command line interface) that they download and then extract in SOPHIA is not available through the VS code website for the version that we are using (since the cluster doesn't work with VS code versions >1.98.2).
+
+Lukas uploaded his code file in '/groups/EXTREMES/lalka/code' on the cluster, so maybe, instead of downloading it, you can just copy it directly from there to your folder. His file is valid for VS code 1.98.2.
+Alternatively, if you have another VS code version,  you can also do what claude ai suggested to me, i.e. access this link 'https://update.code.visualstudio.com/VERSION/cli-alpine-x64/stable' (replacing VERSION with the VS code version you have). It will download the code file itself.
+
+
+### Creating a local config for SOPHIA
+
+This step is useful to speed up the ssh process, and allows you to login just typing in your terminal:
+
+```
+ssh NAME
+```
+
+where NAME is a word you can choose (i.e. we have 'hpc'), instead of having to type this every time:
+
+```
+ssh DTU-INITIALS@sophia.dtu.dk
+```
+
+This can be achieved by crating a local config for SOPHIA on your local machine. 
+To do so, on your local machine you have to open a terminal and type:
+
+```
+nano ~/.ssh/config
+```
+
+This will open a text editor where you will be able to modify your config file. Just copy paste there:
+
+```
+Host NAME
+    ControlMaster auto
+    ControlPath ~/.ssh/master-%r@%h:%p
+    HostName sophia.dtu.dk
+    User DTU-INITIALS
+
+```
+
+Once you did copy paste, to save and close the editor view you need to do:
+
+1. Ctrl + O (saves your changes)
+
+2. Enter (confirms you want to overwrite the previous version of the file)
+
+3. Ctrl + X (closes the editor)
+
+
+### Creating a token to access SOPHIA
+
+This step is also useful to speed up the ssh process to SOPHIA, since, by generating a key token, you can avoid to enter your password when accessing SOPHIA.
+
+To create the key, you need to open the terminal on your local machine and then type
+
+```
+ssh-keygen
+```
+This will ask to:
+1. Enter file in which to save the key
+2. Enter passphrase for your key
+3. Enter same passphrase again
+
+If you press enter three times, the default saving path will be used and no password will be set. (ASK LUKAS)
+
+Then, on the terminal on your local machine type:
+
+```
+ssh-copy-id DTU-INITIALS@sophia.dtu.dk
+```
+
+Or, if you created the local config for SOPHIA, following the previous step, you do:
+
+```
+ssh-copy-id NAME
+```
+Now you can try logging into the remote machine, typing: 
+```
+ssh DTU-INITIALS@sophia.dtu.dk
+```
+or, if you created the local config for SOPHIA
+```
+ssh NAME
+```
+and check to make sure that only the key was added.
+
+##### Note:
+This is only safe (enough) because we assume your local machine is already protected by a password.
+
+### Creating a config for the HPC
 
 
