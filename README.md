@@ -305,11 +305,12 @@ For our experience this creates a more stable connection to SOPHIA.
 
 You can tunnel to both the login node or a specific partition node. To do the latter, before tunneling, you can request and access a node and then tunnel.
 
-##### Note:
+#### Note:
 The only issue that may arise is that the unix executable file for the CLI (command line interface) that they download and then extract in SOPHIA is not available through the VS code website for the version that we are using (since the cluster doesn't work with VS code versions >1.98.2).
 
-Lukas uploaded his code file in '/groups/EXTREMES/lalka/code' on the cluster, so maybe, instead of downloading it, you can just copy it directly from there to your folder. His file is valid for VS code 1.98.2.
 Alternatively, if you have another VS code version,  you can also do what claude ai suggested to me, i.e. access this link 'https://update.code.visualstudio.com/VERSION/cli-alpine-x64/stable' (replacing VERSION with the VS code version you have). It will download the code file itself.
+
+On some computer the executable fil won't open, but that is not necessary, you just need to copy paste it to your SOPHIA repository, as they do in the video.
 
 
 ### Creating a local config for SOPHIA
@@ -390,9 +391,91 @@ ssh NAME
 ```
 and check to make sure that only the key was added.
 
-##### Note:
+#### Note:
 This is only safe (enough) because we assume your local machine is already protected by a password.
 
 ### Creating a config for the HPC
 
 
+Also, it is possible to set up a configuration file for the SOPHIA hpc, where some shortcuts can be defined. This file can be accessed with:
+
+```
+nano ~/.bashrc
+```
+
+Which commands you want in there is highly subjective. But some generally useful commands for running PyPSA on SOPHIA are:
+
+```
+# Gurobi license file
+export GRB_LICENSE_FILE=~/gurobi.lic
+
+
+# Conda/Mamba initialization
+eval "$(/home/rofrug/miniforge3/bin/conda shell.bash hook)"
+
+# Load git and tmux modules
+module load git
+module load tmux
+
+```
+
+This section can be copy-pasted at the bottom of the file.
+Once you did copy paste, to save and close the editor view you need to do:
+
+1. Ctrl + O (saves your changes)
+
+2. Enter (confirms you want to overwrite the previous version of the file)
+
+3. Ctrl + X (closes the editor)
+
+To make this file 'effective', you need to do:
+
+```
+source ~/.bashrc
+```
+
+### tmux windows
+
+
+A good practice is to operate within tmux, which is a 'terminal multiplexer' (https://github.com/tmux/tmux/wiki). The advantage of tmux windows is that they keep processes running even when the connection is being closed, this includes submitting snakemake jobs, but also opening an interactive node.
+
+Here are some important shortcuts, as they are often counterintuitive: https://tmuxcheatsheet.com/
+
+What I usually do, in general, to use SOPHIA is reducing connection issues to the minimum, while not overcrowding the SOPHIA hpc is:
+
+1. Open my local computer terminal
+2. Ssh to SOPHIA form the terminal of my computer, with 
+
+```
+ssh DTU-INITIALS@sophia.dtu.dk
+```
+
+3. Open a tmux session on the same terminal, with 
+
+```
+tmux new-session -s NAME_OF_YOUR_SESSION -A
+```
+
+4. Request an interactive node on the tmux window, with
+
+```
+salloc -N 1 -n 1 --time=15:00:00
+```
+
+5. Ssh into that node, with
+
+```
+ssh NODE_NAME
+```
+
+6. Tunnel to VS code, with 
+
+```
+./code tunnel
+```
+
+
+This will connect the tunnel to VS code so that you can open VS code, and you can connect to your tunnel to sophia. You will connect to the interactive node that you requested and ssh-ed to. It is very important to NOT tunnel to the login node, since the tunneling process already takes up some memory, and if it happens on the login node there is the risk to slow down the wholde SOPHIA cluster.
+
+
+Anything you do in VS Code needs to be happening on an interactive node, never on a login node. Once you have an interactive node, you can also run notebooks there and some smaller operations. You can check the operations of different nodes here: http://10.40.84.120/ganglia/?c=OpenHPC&m=load_one&r=hour&s=by%20name&hc=4&mc=2.
